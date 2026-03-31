@@ -1,0 +1,6 @@
+numpy~=2.4
+pandas~=3.0
+matplotlib~=3.10
+scikit-learn~=1.8
+torch~=2.11
+jupyter~=1.1
