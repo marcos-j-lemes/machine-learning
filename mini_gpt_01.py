@@ -18,7 +18,7 @@ import torch.nn.functional as F
 #  Dataset
 # ─────────────────────────────────────────────
 
-DATASET = [
+DATASET_ = [
     "eu não desisto",
     "ainda não terminei",
     "não acabou",
@@ -202,6 +202,20 @@ DATASET = [
     "eu sou forte, sou capaz, sou vencedor",
 ]
 
+DATASET = [
+    "ouviram do ipiranga as margens placidas",
+    "de um povo heroico o brado retumbante",
+    "e o sol da liberdade em raios fulgidos",
+    "brilhou no ceu da patria nesse instante",
+    "se o penhor dessa igualdade",
+    "conseguimos conquistar com braco forte",
+    "em teu seio o liberdade",
+    "desafia o nosso peito a propria morte",
+    "o patria amada idolatrada salve salve",
+    "brasil um sonho intenso um raio vivido",
+    "de amor e de esperanca a terra desce"
+]
+
 print(len(DATASET))  # Para você ver o tamanho
 
 # ─────────────────────────────────────────────
@@ -296,11 +310,11 @@ class MiniGPT(nn.Module):
 #  Hyperparameters
 # ─────────────────────────────────────────────
 
-EMBEDDING_DIM = 32
-NUM_HEADS     = 2
-NUM_LAYERS    = 2
-MAX_SEQ_LEN   = 10
-FFN_DIM       = 64       # rule of thumb: 2–4× embedding_dim
+# EMBEDDING_DIM = 32
+# NUM_HEADS     = 2
+# NUM_LAYERS    = 2
+# MAX_SEQ_LEN   = 10
+# FFN_DIM       = 64       # rule of thumb: 2–4× embedding_dim
 
 # EMBEDDING_DIM = 64
 # NUM_HEADS     = 4
@@ -314,11 +328,11 @@ FFN_DIM       = 64       # rule of thumb: 2–4× embedding_dim
 # MAX_SEQ_LEN   = 20
 # FFN_DIM       = 256
 
-# EMBEDDING_DIM = 256
-# NUM_HEADS     = 8
-# NUM_LAYERS    = 6
-# MAX_SEQ_LEN   = 32
-# FFN_DIM       = 1024
+EMBEDDING_DIM = 256
+NUM_HEADS     = 8
+NUM_LAYERS    = 6
+MAX_SEQ_LEN   = 32
+FFN_DIM       = 1024
 
 model     = MiniGPT(VOCAB_SIZE, EMBEDDING_DIM, NUM_HEADS, NUM_LAYERS, MAX_SEQ_LEN, FFN_DIM)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
