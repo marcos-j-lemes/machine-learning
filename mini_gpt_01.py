@@ -296,11 +296,11 @@ class MiniGPT(nn.Module):
 #  Hyperparameters
 # ─────────────────────────────────────────────
 
-# EMBEDDING_DIM = 32
-# NUM_HEADS     = 2
-# NUM_LAYERS    = 2
-# MAX_SEQ_LEN   = 10
-# FFN_DIM       = 64       # rule of thumb: 2–4× embedding_dim
+EMBEDDING_DIM = 32
+NUM_HEADS     = 2
+NUM_LAYERS    = 2
+MAX_SEQ_LEN   = 10
+FFN_DIM       = 64       # rule of thumb: 2–4× embedding_dim
 
 # EMBEDDING_DIM = 64
 # NUM_HEADS     = 4
@@ -314,11 +314,11 @@ class MiniGPT(nn.Module):
 # MAX_SEQ_LEN   = 20
 # FFN_DIM       = 256
 
-EMBEDDING_DIM = 256
-NUM_HEADS     = 8
-NUM_LAYERS    = 6
-MAX_SEQ_LEN   = 32
-FFN_DIM       = 1024
+# EMBEDDING_DIM = 256
+# NUM_HEADS     = 8
+# NUM_LAYERS    = 6
+# MAX_SEQ_LEN   = 32
+# FFN_DIM       = 1024
 
 model     = MiniGPT(VOCAB_SIZE, EMBEDDING_DIM, NUM_HEADS, NUM_LAYERS, MAX_SEQ_LEN, FFN_DIM)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -386,27 +386,86 @@ counter = 0
 # print("\nTraining complete.\n")
 
 
+# ─────────────────────────────────────────────
+#  Training 02
+# ─────────────────────────────────────────────
+# EPOCHS = 500
+
+# print("\nTraining...\n")
+
+# for epoch in range(EPOCHS):
+#     total_loss = 0.0
+#     model.train()
+
+#     for seq in tokenized_dataset:
+#         if len(seq) < 2:
+#             continue
+
+#         tokens        = torch.tensor(seq).unsqueeze(0)   # (1, seq_len)
+#         input_tokens  = tokens[:, :-1]                   # all but last
+#         target_tokens = tokens[:, 1:]                    # all but first
+
+#         logits = model(input_tokens)                     # (1, seq_len-1, vocab_size)
+
+#         loss = F.cross_entropy(
+#             logits.view(-1, VOCAB_SIZE),
+#             target_tokens.view(-1),
+#         )
+
+#         optimizer.zero_grad()
+#         loss.backward()
+#         optimizer.step()
+
+#         total_loss += loss.item()
+
+#     avg_loss = total_loss / len(tokenized_dataset)
+
+#     if epoch % 50 == 0:
+#         print(f"  Epoch {epoch:>4} | Loss: {avg_loss:.4f}")
+
+# print("\nTraining complete.\n")
+
+# ─────────────────────────────────────────────
+#  Training 03
+# ─────────────────────────────────────────────
 EPOCHS = 500
 
-print("\nTraining...\n")
+def create_batches(dataset, batch_size=32):
+    batches = []
+    for i in range(0, len(dataset), batch_size):
+        batch = dataset[i:i+batch_size]
+        batches.append(batch)
+    return batches
+
+batch_size = 32
+batches = create_batches(tokenized_dataset, batch_size)
+
+import torch.nn.utils.rnn as rnn_utils
+
+def collate_batch(batch):
+    batch_tensors = [torch.tensor(seq) for seq in batch]
+    padded = rnn_utils.pad_sequence(batch_tensors, batch_first=True)
+    
+    input_tokens  = padded[:, :-1]
+    target_tokens = padded[:, 1:]
+    
+    return input_tokens, target_tokens
 
 for epoch in range(EPOCHS):
     total_loss = 0.0
     model.train()
 
-    for seq in tokenized_dataset:
-        if len(seq) < 2:
-            continue
+    for batch in batches:
+        input_tokens, target_tokens = collate_batch(batch)
 
-        tokens        = torch.tensor(seq).unsqueeze(0)   # (1, seq_len)
-        input_tokens  = tokens[:, :-1]                   # all but last
-        target_tokens = tokens[:, 1:]                    # all but first
+        input_tokens  = input_tokens.to(device)
+        target_tokens = target_tokens.to(device)
 
-        logits = model(input_tokens)                     # (1, seq_len-1, vocab_size)
+        logits = model(input_tokens)
 
         loss = F.cross_entropy(
             logits.view(-1, VOCAB_SIZE),
-            target_tokens.view(-1),
+            target_tokens.reshape(-1),
         )
 
         optimizer.zero_grad()
@@ -414,13 +473,6 @@ for epoch in range(EPOCHS):
         optimizer.step()
 
         total_loss += loss.item()
-
-    avg_loss = total_loss / len(tokenized_dataset)
-
-    if epoch % 50 == 0:
-        print(f"  Epoch {epoch:>4} | Loss: {avg_loss:.4f}")
-
-print("\nTraining complete.\n")
 
 # ─────────────────────────────────────────────
 #  Text generation
@@ -490,5 +542,5 @@ while True:
         print(".", end="", flush=True)
     print("\n")
 
-    output = generate(model, user_input, max_new_tokens=15)
+    output = generate(model, user_input, max_new_tokens=50)
     stream_output(output)
